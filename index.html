@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>マイダッシュボード</title>
+  <style>
+    /* ===== 基本設定 ===== */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ===== 全体レイアウト ===== */
+    .dashboard {
+      display: grid;
+      grid-template-columns: 320px 1fr 280px;
+      grid-template-rows: auto 1fr;
+      gap: 12px;
+      padding: 12px;
+      height: 100vh;
+    }
+
+    /* ===== カード共通 ===== */
+    .card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+
+    .card h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    /* ===== 時計・日付エリア ===== */
+    .clock-card {
+      grid-column: 1;
+      grid-row: 1;
+      background: linear-gradient(135deg, #4f46e5, #7c3aed);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      min-height: 130px;
+    }
+
+    .clock-card h2 {
+      color: rgba(255,255,255,0.7);
+    }
+
+    #clock-time {
+      font-size: 52px;
+      font-weight: 200;
+      letter-spacing: -2px;
+      line-height: 1;
+    }
+
+    #clock-date {
+      font-size: 14px;
+      margin-top: 6px;
+      opacity: 0.85;
+    }
+
+    /* ===== ToDoリスト ===== */
+    .todo-card {
+      grid-column: 1;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .todo-input-row {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .todo-input-row input {
+      flex: 1;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .todo-input-row input:focus {
+      border-color: #4f46e5;
+    }
+
+    .todo-input-row button {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-size: 18px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .todo-input-row button:hover {
+      background: #4338ca;
+    }
+
+    #todo-list {
+      list-style: none;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    #todo-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 4px;
+      border-bottom: 1px solid #f3f4f6;
+      font-size: 14px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    #todo-list li.done {
+      opacity: 0.4;
+      text-decoration: line-through;
+    }
+
+    #todo-list li .check {
+      width: 18px;
+      height: 18px;
+      border: 2px solid #d1d5db;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    #todo-list li.done .check {
+      background: #4f46e5;
+      border-color: #4f46e5;
+      color: white;
+      font-size: 11px;
+    }
+
+    #todo-list li .del {
+      margin-left: auto;
+      color: #d1d5db;
+      font-size: 16px;
+      padding: 0 4px;
+      cursor: pointer;
+    }
+
+    #todo-list li .del:hover {
+      color: #ef4444;
+    }
+
+    /* ===== カレンダー ===== */
+    .calendar-card {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .calendar-header span {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .calendar-header button {
+      background: none;
+      border: 1.5px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 4px 10px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #555;
+      transition: all 0.2s;
+    }
+
+    .calendar-header button:hover {
+      background: #f3f4f6;
+    }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      flex: 1;
+    }
+
+    .cal-day-label {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 600;
+      color: #9ca3af;
+      padding: 4px 0;
+    }
+
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.15s;
+      color: #333;
+    }
+
+    .cal-day:hover {
+      background: #f3f4f6;
+    }
+
+    .cal-day.today {
+      background: #4f46e5;
+      color: white;
+      font-weight: 600;
+    }
+
+    .cal-day.other-month {
+      color: #d1d5db;
+    }
+
+    .cal-day.sunday { color: #ef4444; }
+    .cal-day.saturday { color: #3b82f6; }
+    .cal-day.today { color: white; }
+
+    /* ===== 健康情報 ===== */
+    .health-card {
+      grid-column: 3;
+      grid-row: 1;
+      min-height: 130px;
+    }
+
+    .health-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .stat-item {
+      background: #f9fafb;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-item .stat-icon {
+      font-size: 20px;
+      margin-bottom: 2px;
+    }
+
+    .stat-item .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+      color: #4f46e5;
+    }
+
+    .stat-item .stat-label {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 2px;
+    }
+
+    .health-note {
+      font-size: 11px;
+      color: #d1d5db;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ===== Notionメモ ===== */
+    .notion-card {
+      grid-column: 3;
+      grid-row: 2;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .notion-placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f9fafb;
+      border-radius: 10px;
+      color: #9ca3af;
+      font-size: 13px;
+      text-align: center;
+      padding: 16px;
+      gap: 8px;
+    }
+
+    .notion-placeholder span {
+      font-size: 28px;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard">
+
+    <!-- 時計 -->
+    <div class="card clock-card">
+      <h2>現在時刻</h2>
+      <div id="clock-time">00:00</div>
+      <div id="clock-date">読み込み中...</div>
+    </div>
+
+    <!-- ToDoリスト -->
+    <div class="card todo-card">
+      <h2>ToDoリスト</h2>
+      <div class="todo-input-row">
+        <input type="text" id="todo-input" placeholder="新しいタスクを入力..." />
+        <button onclick="addTodo()">＋</button>
+      </div>
+      <ul id="todo-list"></ul>
+    </div>
+
+    <!-- カレンダー -->
+    <div class="card calendar-card">
+      <div class="calendar-header">
+        <button onclick="changeMonth(-1)">＜</button>
+        <span id="calendar-title"></span>
+        <button onclick="changeMonth(1)">＞</button>
+      </div>
+      <div class="calendar-grid" id="calendar-grid"></div>
+    </div>
+
+    <!-- 健康情報 -->
+    <div class="card health-card">
+      <h2>健康情報</h2>
+      <div class="health-stats">
+        <div class="stat-item">
+          <div class="stat-icon">👟</div>
+          <div class="stat-value" id="steps">—</div>
+          <div class="stat-label">歩数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">❤️</div>
+          <div class="stat-value" id="heart">—</div>
+          <div class="stat-label">心拍数</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">😴</div>
+          <div class="stat-value" id="sleep">—</div>
+          <div class="stat-label">睡眠(h)</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value" id="calories">—</div>
+          <div class="stat-label">カロリー</div>
+        </div>
+      </div>
+      <div class="health-note">※ Garmin連携は後ほど設定</div>
+    </div>
+
+    <!-- Notion -->
+    <div class="card notion-card">
+      <h2>Notionメモ</h2>
+      <div class="notion-placeholder">
+        <span>📝</span>
+        Notion連携は後ほど設定します
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // ===== 時計 =====
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('clock-time').textContent = `${h}:${m}`;
+
+      const days = ['日', '月', '火', '水', '木', '金', '土'];
+      const y = now.getFullYear();
+      const mo = now.getMonth() + 1;
+      const d = now.getDate();
+      const day = days[now.getDay()];
+      document.getElementById('clock-date').textContent = `${y}年${mo}月${d}日（${day}）`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
+
+    // ===== カレンダー =====
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+
+    function renderCalendar() {
+      const title = document.getElementById('calendar-title');
+      const grid = document.getElementById('calendar-grid');
+      title.textContent = `${currentYear}年${currentMonth + 1}月`;
+      grid.innerHTML = '';
+
+      const dayLabels = ['日', '月', '火', '水', '木', '金', '土'];
+      dayLabels.forEach((label, i) => {
+        const el = document.createElement('div');
+        el.className = 'cal-day-label';
+        el.textContent = label;
+        if (i === 0) el.style.color = '#fca5a5';
+        if (i === 6) el.style.color = '#93c5fd';
+        grid.appendChild(el);
+      });
+
+      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const daysInPrev = new Date(currentYear, currentMonth, 0).getDate();
+      const today = new Date();
+
+      // 前月の日
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = daysInPrev - i;
+        grid.appendChild(el);
+      }
+
+      // 当月の日
+      for (let d = 1; d <= daysInMonth; d++) {
+        const el = document.createElement('div');
+        const dow = (firstDay + d - 1) % 7;
+        let cls = 'cal-day';
+        if (dow === 0) cls += ' sunday';
+        if (dow === 6) cls += ' saturday';
+        if (
+          d === today.getDate() &&
+          currentMonth === today.getMonth() &&
+          currentYear === today.getFullYear()
+        ) cls += ' today';
+        el.className = cls;
+        el.textContent = d;
+        grid.appendChild(el);
+      }
+
+      // 次月の日（6行に満たない場合は埋める）
+      const total = firstDay + daysInMonth;
+      const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
+      for (let d = 1; d <= remaining; d++) {
+        const el = document.createElement('div');
+        el.className = 'cal-day other-month';
+        el.textContent = d;
+        grid.appendChild(el);
+      }
+    }
+
+    function changeMonth(delta) {
+      currentMonth += delta;
+      if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+      if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+      renderCalendar();
+    }
+
+    renderCalendar();
+
+    // ===== ToDoリスト =====
+    let todos = JSON.parse(localStorage.getItem('dashboard-todos') || '[]');
+
+    function saveTodos() {
+      localStorage.setItem('dashboard-todos', JSON.stringify(todos));
+    }
+
+    function renderTodos() {
+      const list = document.getElementById('todo-list');
+      list.innerHTML = '';
+      todos.forEach((todo, i) => {
+        const li = document.createElement('li');
+        li.className = todo.done ? 'done' : '';
+        li.innerHTML = `
+          <div class="check" onclick="toggleTodo(${i})">${todo.done ? '✓' : ''}</div>
+          <span onclick="toggleTodo(${i})">${todo.text}</span>
+          <span class="del" onclick="deleteTodo(${i})">×</span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    function addTodo() {
+      const input = document.getElementById('todo-input');
+      const text = input.value.trim();
+      if (!text) return;
+      todos.unshift({ text, done: false });
+      saveTodos();
+      renderTodos();
+      input.value = '';
+      input.focus();
+    }
+
+    function toggleTodo(i) {
+      todos[i].done = !todos[i].done;
+      saveTodos();
+      renderTodos();
+    }
+
+    function deleteTodo(i) {
+      todos.splice(i, 1);
+      saveTodos();
+      renderTodos();
+    }
+
+    // Enterキーで追加
+    document.getElementById('todo-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') addTodo();
+    });
+
+    renderTodos();
+  </script>
+</body>
+</html>
