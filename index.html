@@ -490,6 +490,9 @@
         // 全カレンダーから予定を取得
         calendarEvents = {};
         let totalCount = 0;
+        const calNames = (calListData.items || []).map(c => c.summary).join('、');
+        document.getElementById('gcal-status').textContent =
+          `カレンダー取得中（${(calListData.items||[]).length}個：${calNames}）`;
 
         for (const cal of (calListData.items || [])) {
           const res = await fetch(
