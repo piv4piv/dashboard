@@ -475,6 +475,7 @@
       if (!accessToken) return;
       const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString();
       const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59).toISOString();
+      try {
 
       const res = await fetch(
         `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfMonth}&timeMax=${endOfMonth}&singleEvents=true&maxResults=100`,
@@ -501,6 +502,9 @@
         `Googleカレンダー連携中（${count}件）`;
 
       renderCalendar();
+      } catch (e) {
+        document.getElementById('gcal-status').textContent = 'エラー：' + e.message;
+      }
     }
 
     // ===== ToDoリスト =====
