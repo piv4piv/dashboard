@@ -5,12 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>マイダッシュボード</title>
   <style>
-    /* ===== 基本設定 ===== */
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
@@ -20,7 +15,6 @@
       overflow: hidden;
     }
 
-    /* ===== 全体レイアウト ===== */
     .dashboard {
       display: grid;
       grid-template-columns: 320px 1fr 280px;
@@ -30,7 +24,6 @@
       height: 100vh;
     }
 
-    /* ===== カード共通 ===== */
     .card {
       background: #fff;
       border-radius: 16px;
@@ -48,10 +41,9 @@
       margin-bottom: 12px;
     }
 
-    /* ===== 時計・日付エリア ===== */
+    /* 時計 */
     .clock-card {
-      grid-column: 1;
-      grid-row: 1;
+      grid-column: 1; grid-row: 1;
       background: linear-gradient(135deg, #4f46e5, #7c3aed);
       color: white;
       display: flex;
@@ -61,270 +53,138 @@
       text-align: center;
       min-height: 130px;
     }
+    .clock-card h2 { color: rgba(255,255,255,0.7); }
+    #clock-time { font-size: 52px; font-weight: 200; letter-spacing: -2px; line-height: 1; }
+    #clock-date { font-size: 14px; margin-top: 6px; opacity: 0.85; }
 
-    .clock-card h2 {
-      color: rgba(255,255,255,0.7);
-    }
-
-    #clock-time {
-      font-size: 52px;
-      font-weight: 200;
-      letter-spacing: -2px;
-      line-height: 1;
-    }
-
-    #clock-date {
-      font-size: 14px;
-      margin-top: 6px;
-      opacity: 0.85;
-    }
-
-    /* ===== ToDoリスト ===== */
-    .todo-card {
-      grid-column: 1;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .todo-input-row {
-      display: flex;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-
+    /* ToDo */
+    .todo-card { grid-column: 1; grid-row: 2; display: flex; flex-direction: column; }
+    .todo-input-row { display: flex; gap: 6px; margin-bottom: 10px; }
     .todo-input-row input {
-      flex: 1;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 8px 10px;
-      font-size: 13px;
-      outline: none;
-      transition: border-color 0.2s;
+      flex: 1; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 8px 10px; font-size: 13px; outline: none; transition: border-color 0.2s;
     }
-
-    .todo-input-row input:focus {
-      border-color: #4f46e5;
-    }
-
+    .todo-input-row input:focus { border-color: #4f46e5; }
     .todo-input-row button {
-      background: #4f46e5;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      padding: 8px 14px;
-      font-size: 18px;
-      cursor: pointer;
-      transition: background 0.2s;
+      background: #4f46e5; color: white; border: none;
+      border-radius: 8px; padding: 8px 14px; font-size: 18px; cursor: pointer;
     }
-
-    .todo-input-row button:hover {
-      background: #4338ca;
-    }
-
-    #todo-list {
-      list-style: none;
-      overflow-y: auto;
-      flex: 1;
-    }
-
+    .todo-input-row button:hover { background: #4338ca; }
+    #todo-list { list-style: none; overflow-y: auto; flex: 1; }
     #todo-list li {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 4px;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 14px;
-      cursor: pointer;
-      transition: opacity 0.2s;
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 4px; border-bottom: 1px solid #f3f4f6;
+      font-size: 14px; cursor: pointer; transition: opacity 0.2s;
     }
-
-    #todo-list li.done {
-      opacity: 0.4;
-      text-decoration: line-through;
-    }
-
+    #todo-list li.done { opacity: 0.4; text-decoration: line-through; }
     #todo-list li .check {
-      width: 18px;
-      height: 18px;
-      border: 2px solid #d1d5db;
-      border-radius: 50%;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
+      width: 18px; height: 18px; border: 2px solid #d1d5db;
+      border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
     }
+    #todo-list li.done .check { background: #4f46e5; border-color: #4f46e5; color: white; font-size: 11px; }
+    #todo-list li .del { margin-left: auto; color: #d1d5db; font-size: 16px; padding: 0 4px; cursor: pointer; }
+    #todo-list li .del:hover { color: #ef4444; }
 
-    #todo-list li.done .check {
-      background: #4f46e5;
-      border-color: #4f46e5;
-      color: white;
-      font-size: 11px;
-    }
-
-    #todo-list li .del {
-      margin-left: auto;
-      color: #d1d5db;
-      font-size: 16px;
-      padding: 0 4px;
-      cursor: pointer;
-    }
-
-    #todo-list li .del:hover {
-      color: #ef4444;
-    }
-
-    /* ===== カレンダー ===== */
+    /* カレンダー */
     .calendar-card {
-      grid-column: 2;
-      grid-row: 1 / 3;
-      display: flex;
-      flex-direction: column;
+      grid-column: 2; grid-row: 1 / 3;
+      display: flex; flex-direction: column;
     }
-
     .calendar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 12px;
+      display: flex; align-items: center;
+      justify-content: space-between; margin-bottom: 12px;
     }
-
-    .calendar-header span {
-      font-size: 16px;
-      font-weight: 600;
-    }
-
+    .calendar-header span { font-size: 16px; font-weight: 600; }
     .calendar-header button {
-      background: none;
-      border: 1.5px solid #e5e7eb;
-      border-radius: 8px;
-      padding: 4px 10px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #555;
-      transition: all 0.2s;
+      background: none; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 4px 10px; cursor: pointer; font-size: 14px; color: #555;
     }
+    .calendar-header button:hover { background: #f3f4f6; }
 
-    .calendar-header button:hover {
-      background: #f3f4f6;
+    /* Googleログインボタン */
+    .gcal-login-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px; padding: 8px 10px;
+      background: #f9fafb; border-radius: 10px; font-size: 12px;
     }
+    .gcal-login-bar span { color: #6b7280; }
+    .gcal-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: #fff; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 5px 12px; font-size: 12px; cursor: pointer;
+      color: #333; font-weight: 500; transition: background 0.2s;
+    }
+    .gcal-btn:hover { background: #f3f4f6; }
+    .gcal-btn img { width: 16px; height: 16px; }
+    .gcal-btn.logout { color: #ef4444; border-color: #fecaca; }
+    .gcal-btn.logout:hover { background: #fef2f2; }
 
     .calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 4px;
-      flex: 1;
+      display: grid; grid-template-columns: repeat(7, 1fr);
+      gap: 4px; flex: 1;
     }
-
     .cal-day-label {
-      text-align: center;
-      font-size: 11px;
-      font-weight: 600;
-      color: #9ca3af;
-      padding: 4px 0;
+      text-align: center; font-size: 11px; font-weight: 600;
+      color: #9ca3af; padding: 4px 0;
     }
-
     .cal-day {
-      aspect-ratio: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 50%;
-      font-size: 14px;
-      cursor: pointer;
-      transition: background 0.15s;
-      color: #333;
+      aspect-ratio: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      border-radius: 10px; font-size: 13px; cursor: pointer;
+      transition: background 0.15s; color: #333; position: relative;
     }
-
-    .cal-day:hover {
-      background: #f3f4f6;
-    }
-
-    .cal-day.today {
-      background: #4f46e5;
-      color: white;
-      font-weight: 600;
-    }
-
-    .cal-day.other-month {
-      color: #d1d5db;
-    }
-
+    .cal-day:hover { background: #f3f4f6; }
+    .cal-day.today { background: #4f46e5; color: white; font-weight: 600; }
+    .cal-day.other-month { color: #d1d5db; }
     .cal-day.sunday { color: #ef4444; }
     .cal-day.saturday { color: #3b82f6; }
     .cal-day.today { color: white; }
+    .cal-day .event-dots {
+      display: flex; gap: 2px; margin-top: 2px;
+    }
+    .cal-day .event-dot {
+      width: 4px; height: 4px; border-radius: 50%;
+      background: #4f46e5; flex-shrink: 0;
+    }
+    .cal-day.today .event-dot { background: white; }
 
-    /* ===== 健康情報 ===== */
-    .health-card {
-      grid-column: 3;
-      grid-row: 1;
-      min-height: 130px;
+    /* 予定ポップオーバー */
+    .event-popover {
+      position: fixed; background: white; border-radius: 12px;
+      padding: 12px 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+      z-index: 100; min-width: 200px; max-width: 280px;
+      font-size: 13px; display: none;
+    }
+    .event-popover h3 { font-size: 12px; color: #888; margin-bottom: 8px; }
+    .event-popover ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .event-popover ul li {
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .event-popover ul li .dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #4f46e5; flex-shrink: 0; margin-top: 4px;
     }
 
-    .health-stats {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
+    /* 健康情報 */
+    .health-card { grid-column: 3; grid-row: 1; min-height: 130px; }
+    .health-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .stat-item { background: #f9fafb; border-radius: 10px; padding: 10px; text-align: center; }
+    .stat-item .stat-icon { font-size: 20px; margin-bottom: 2px; }
+    .stat-item .stat-value { font-size: 18px; font-weight: 700; color: #4f46e5; }
+    .stat-item .stat-label { font-size: 10px; color: #9ca3af; margin-top: 2px; }
+    .health-note { font-size: 11px; color: #d1d5db; text-align: center; margin-top: 8px; }
 
-    .stat-item {
-      background: #f9fafb;
-      border-radius: 10px;
-      padding: 10px;
-      text-align: center;
-    }
-
-    .stat-item .stat-icon {
-      font-size: 20px;
-      margin-bottom: 2px;
-    }
-
-    .stat-item .stat-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: #4f46e5;
-    }
-
-    .stat-item .stat-label {
-      font-size: 10px;
-      color: #9ca3af;
-      margin-top: 2px;
-    }
-
-    .health-note {
-      font-size: 11px;
-      color: #d1d5db;
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    /* ===== Notionメモ ===== */
-    .notion-card {
-      grid-column: 3;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-    }
-
+    /* Notion */
+    .notion-card { grid-column: 3; grid-row: 2; display: flex; flex-direction: column; }
     .notion-placeholder {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: #f9fafb;
-      border-radius: 10px;
-      color: #9ca3af;
-      font-size: 13px;
-      text-align: center;
-      padding: 16px;
-      gap: 8px;
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      background: #f9fafb; border-radius: 10px;
+      color: #9ca3af; font-size: 13px; text-align: center;
+      padding: 16px; gap: 8px;
     }
-
-    .notion-placeholder span {
-      font-size: 28px;
-    }
+    .notion-placeholder span { font-size: 28px; }
   </style>
 </head>
 <body>
@@ -337,7 +197,7 @@
       <div id="clock-date">読み込み中...</div>
     </div>
 
-    <!-- ToDoリスト -->
+    <!-- ToDo -->
     <div class="card todo-card">
       <h2>ToDoリスト</h2>
       <div class="todo-input-row">
@@ -354,6 +214,16 @@
         <span id="calendar-title"></span>
         <button onclick="changeMonth(1)">＞</button>
       </div>
+
+      <!-- Googleログインバー -->
+      <div class="gcal-login-bar">
+        <span id="gcal-status">Googleカレンダー未連携</span>
+        <button class="gcal-btn" id="gcal-btn" onclick="handleGcalAuth()">
+          <img src="https://www.google.com/favicon.ico" alt="Google" />
+          Googleでログイン
+        </button>
+      </div>
+
       <div class="calendar-grid" id="calendar-grid"></div>
     </div>
 
@@ -396,20 +266,33 @@
 
   </div>
 
+  <!-- 予定ポップオーバー -->
+  <div class="event-popover" id="event-popover">
+    <h3 id="popover-date"></h3>
+    <ul id="popover-events"></ul>
+  </div>
+
+  <!-- Google API -->
+  <script src="https://accounts.google.com/gsi/client" async></script>
+  <script src="https://apis.google.com/js/api.js" async></script>
+
   <script>
+    // ===== 設定 =====
+    const CLIENT_ID = '397439923807-1ekl6t1orsaep2kdopmk79p1jft21j9r.apps.googleusercontent.com';
+    const SCOPES = 'https://www.googleapis.com/auth/calendar.readonly';
+
     // ===== 時計 =====
     function updateClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
       const m = String(now.getMinutes()).padStart(2, '0');
       document.getElementById('clock-time').textContent = `${h}:${m}`;
-
       const days = ['日', '月', '火', '水', '木', '金', '土'];
       const y = now.getFullYear();
       const mo = now.getMonth() + 1;
       const d = now.getDate();
-      const day = days[now.getDay()];
-      document.getElementById('clock-date').textContent = `${y}年${mo}月${d}日（${day}）`;
+      document.getElementById('clock-date').textContent =
+        `${y}年${mo}月${d}日（${days[now.getDay()]}）`;
     }
     updateClock();
     setInterval(updateClock, 1000);
@@ -417,6 +300,13 @@
     // ===== カレンダー =====
     let currentYear = new Date().getFullYear();
     let currentMonth = new Date().getMonth();
+    let calendarEvents = {}; // { "2026-04-06": ["予定名", ...] }
+    let tokenClient = null;
+    let accessToken = null;
+
+    function dateKey(y, m, d) {
+      return `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    }
 
     function renderCalendar() {
       const title = document.getElementById('calendar-title');
@@ -439,7 +329,6 @@
       const daysInPrev = new Date(currentYear, currentMonth, 0).getDate();
       const today = new Date();
 
-      // 前月の日
       for (let i = firstDay - 1; i >= 0; i--) {
         const el = document.createElement('div');
         el.className = 'cal-day other-month';
@@ -447,24 +336,39 @@
         grid.appendChild(el);
       }
 
-      // 当月の日
       for (let d = 1; d <= daysInMonth; d++) {
         const el = document.createElement('div');
         const dow = (firstDay + d - 1) % 7;
         let cls = 'cal-day';
         if (dow === 0) cls += ' sunday';
         if (dow === 6) cls += ' saturday';
-        if (
-          d === today.getDate() &&
-          currentMonth === today.getMonth() &&
-          currentYear === today.getFullYear()
-        ) cls += ' today';
+        if (d === today.getDate() && currentMonth === today.getMonth() && currentYear === today.getFullYear()) cls += ' today';
         el.className = cls;
-        el.textContent = d;
+
+        const dayNum = document.createElement('span');
+        dayNum.textContent = d;
+        el.appendChild(dayNum);
+
+        // 予定ドット
+        const key = dateKey(currentYear, currentMonth, d);
+        const events = calendarEvents[key] || [];
+        if (events.length > 0) {
+          const dots = document.createElement('div');
+          dots.className = 'event-dots';
+          const count = Math.min(events.length, 3);
+          for (let i = 0; i < count; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'event-dot';
+            dots.appendChild(dot);
+          }
+          el.appendChild(dots);
+        }
+
+        // クリックで予定表示
+        el.addEventListener('click', (e) => showPopover(e, currentYear, currentMonth, d));
         grid.appendChild(el);
       }
 
-      // 次月の日（6行に満たない場合は埋める）
       const total = firstDay + daysInMonth;
       const remaining = total % 7 === 0 ? 0 : 7 - (total % 7);
       for (let d = 1; d <= remaining; d++) {
@@ -480,16 +384,119 @@
       if (currentMonth > 11) { currentMonth = 0; currentYear++; }
       if (currentMonth < 0) { currentMonth = 11; currentYear--; }
       renderCalendar();
+      if (accessToken) fetchCalendarEvents();
     }
 
-    renderCalendar();
+    // ===== 予定ポップオーバー =====
+    function showPopover(e, y, m, d) {
+      const key = dateKey(y, m, d);
+      const events = calendarEvents[key] || [];
+      const popover = document.getElementById('event-popover');
+      const days = ['日', '月', '火', '水', '木', '金', '土'];
+      const dow = new Date(y, m, d).getDay();
+
+      document.getElementById('popover-date').textContent =
+        `${y}年${m+1}月${d}日（${days[dow]}）`;
+
+      const ul = document.getElementById('popover-events');
+      ul.innerHTML = '';
+      if (events.length === 0) {
+        ul.innerHTML = '<li style="color:#9ca3af">予定なし</li>';
+      } else {
+        events.forEach(ev => {
+          const li = document.createElement('li');
+          li.innerHTML = `<div class="dot"></div><span>${ev}</span>`;
+          ul.appendChild(li);
+        });
+      }
+
+      const rect = e.target.closest('.cal-day').getBoundingClientRect();
+      popover.style.display = 'block';
+      popover.style.left = `${Math.min(rect.left, window.innerWidth - 300)}px`;
+      popover.style.top = `${rect.bottom + 6}px`;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.cal-day') && !e.target.closest('.event-popover')) {
+        document.getElementById('event-popover').style.display = 'none';
+      }
+    });
+
+    // ===== Google Calendar 認証 =====
+    function initGoogleAuth() {
+      if (typeof google === 'undefined') {
+        setTimeout(initGoogleAuth, 500);
+        return;
+      }
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: CLIENT_ID,
+        scope: SCOPES,
+        callback: (response) => {
+          if (response.access_token) {
+            accessToken = response.access_token;
+            updateGcalUI(true);
+            fetchCalendarEvents();
+          }
+        },
+      });
+    }
+
+    function handleGcalAuth() {
+      if (accessToken) {
+        // ログアウト
+        google.accounts.oauth2.revoke(accessToken, () => {
+          accessToken = null;
+          calendarEvents = {};
+          updateGcalUI(false);
+          renderCalendar();
+        });
+      } else {
+        tokenClient.requestAccessToken();
+      }
+    }
+
+    function updateGcalUI(loggedIn) {
+      const status = document.getElementById('gcal-status');
+      const btn = document.getElementById('gcal-btn');
+      if (loggedIn) {
+        status.textContent = 'Googleカレンダー連携中';
+        status.style.color = '#4f46e5';
+        btn.className = 'gcal-btn logout';
+        btn.innerHTML = 'ログアウト';
+      } else {
+        status.textContent = 'Googleカレンダー未連携';
+        status.style.color = '';
+        btn.className = 'gcal-btn';
+        btn.innerHTML = '<img src="https://www.google.com/favicon.ico" alt="Google" />Googleでログイン';
+      }
+    }
+
+    async function fetchCalendarEvents() {
+      if (!accessToken) return;
+      const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString();
+      const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59).toISOString();
+
+      const res = await fetch(
+        `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfMonth}&timeMax=${endOfMonth}&singleEvents=true&maxResults=100`,
+        { headers: { Authorization: `Bearer ${accessToken}` } }
+      );
+      const data = await res.json();
+
+      calendarEvents = {};
+      (data.items || []).forEach(event => {
+        const dateStr = event.start?.date || event.start?.dateTime?.substring(0, 10);
+        if (!dateStr) return;
+        if (!calendarEvents[dateStr]) calendarEvents[dateStr] = [];
+        calendarEvents[dateStr].push(event.summary || '（タイトルなし）');
+      });
+
+      renderCalendar();
+    }
 
     // ===== ToDoリスト =====
     let todos = JSON.parse(localStorage.getItem('dashboard-todos') || '[]');
 
-    function saveTodos() {
-      localStorage.setItem('dashboard-todos', JSON.stringify(todos));
-    }
+    function saveTodos() { localStorage.setItem('dashboard-todos', JSON.stringify(todos)); }
 
     function renderTodos() {
       const list = document.getElementById('todo-list');
@@ -511,30 +518,20 @@
       const text = input.value.trim();
       if (!text) return;
       todos.unshift({ text, done: false });
-      saveTodos();
-      renderTodos();
-      input.value = '';
-      input.focus();
+      saveTodos(); renderTodos();
+      input.value = ''; input.focus();
     }
 
-    function toggleTodo(i) {
-      todos[i].done = !todos[i].done;
-      saveTodos();
-      renderTodos();
-    }
+    function toggleTodo(i) { todos[i].done = !todos[i].done; saveTodos(); renderTodos(); }
+    function deleteTodo(i) { todos.splice(i, 1); saveTodos(); renderTodos(); }
 
-    function deleteTodo(i) {
-      todos.splice(i, 1);
-      saveTodos();
-      renderTodos();
-    }
-
-    // Enterキーで追加
     document.getElementById('todo-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') addTodo();
     });
 
     renderTodos();
+    renderCalendar();
+    initGoogleAuth();
   </script>
 </body>
 </html>
