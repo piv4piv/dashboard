@@ -593,10 +593,18 @@
     // ===== Notion Todo =====
     const NOTION_WORKER = 'https://notion-proxy.temptic-cat.workers.dev';
     const NOTION_DB_ID = '33a4da79-19cd-8093-aeff-e22fc0b3afda';
+    const NOTION_AUTH_KEY = localStorage.getItem('notion_auth_key') || '';
 
     async function fetchNotionTodos() {
+      if (!NOTION_AUTH_KEY) {
+        document.getElementById('notion-list').innerHTML =
+          '<li style="color:#9ca3af;font-size:13px;padding:8px 0">認証キーが未設定です</li>';
+        return;
+      }
       try {
-        const res = await fetch(`${NOTION_WORKER}/?database_id=${NOTION_DB_ID}`);
+        const res = await fetch(`${NOTION_WORKER}/?database_id=${NOTION_DB_ID}`, {
+          headers: { 'X-Auth-Key': NOTION_AUTH_KEY },
+        });
         const data = await res.json();
         const list = document.getElementById('notion-list');
         list.innerHTML = '';
