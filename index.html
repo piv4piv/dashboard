@@ -549,10 +549,21 @@
         return;
       }
       try {
-        const res = await fetch(`${NOTION_WORKER}/?database_id=${NOTION_DB_ID}&auth=${encodeURIComponent(NOTION_AUTH_KEY)}`);
+        const fetchUrl = `${NOTION_WORKER}/?database_id=${NOTION_DB_ID}&auth=${encodeURIComponent(NOTION_AUTH_KEY)}`;
+        const res = await fetch(fetchUrl);
+        if (!res.ok) {
+          document.getElementById('notion-list').innerHTML =
+            `<li style="color:#ef4444;font-size:11px;padding:8px 0">HTTPエラー：${res.status} ${res.statusText}</li>`;
+          return;
+        }
         const data = await res.json();
         const list = document.getElementById('notion-list');
         list.innerHTML = '';
+
+        if (data.error) {
+          list.innerHTML = `<li style="color:#ef4444;font-size:11px;padding:8px 0">APIエラー：${data.error}</li>`;
+          return;
+        }
 
         if (!data.results || data.results.length === 0) {
           list.innerHTML = '<li style="color:#9ca3af;font-size:13px;padding:8px 0">タスクなし</li>';
