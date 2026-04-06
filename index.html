@@ -200,6 +200,20 @@
       padding: 16px; gap: 8px;
     }
     .notion-placeholder span { font-size: 28px; }
+    #notion-list { list-style: none; overflow-y: auto; flex: 1; }
+    #notion-list li {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 4px; border-bottom: 1px solid #f3f4f6;
+      font-size: 13px;
+    }
+    #notion-list li.done { opacity: 0.4; text-decoration: line-through; }
+    #notion-list li .check {
+      width: 16px; height: 16px; border: 2px solid #d1d5db;
+      border-radius: 4px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px;
+    }
+    #notion-list li.done .check { background: #4f46e5; border-color: #4f46e5; color: white; }
   </style>
 </head>
 <body>
@@ -272,11 +286,8 @@
 
     <!-- Notion -->
     <div class="card notion-card">
-      <h2>Notionメモ</h2>
-      <div class="notion-placeholder">
-        <span>📝</span>
-        Notion連携は後ほど設定します
-      </div>
+      <h2>Notion Todo</h2>
+      <ul id="notion-list"><li style="color:#9ca3af;font-size:13px;padding:8px 0">読み込み中...</li></ul>
     </div>
 
   </div>
@@ -578,6 +589,46 @@
     document.getElementById('todo-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') addTodo();
     });
+
+    // ===== Notion Todo =====
+    const NOTION_WORKER = 'https://notion-proxy.temptic-cat.workers.dev';
+    const NOTION_DB_ID = '33a4da79-19cd-8093-aeff-e22fc0b3afda';
+
+    async function fetchNotionTodos() {
+      try {
+        const res = await fetch(`${NOTION_WORKER}/?database_id=${NOTION_DB_ID}`);
+        const data = await res.json();
+        const list = document.getElementById('notion-list');
+        list.innerHTML = '';
+
+        if (!data.results || data.results.length === 0) {
+          list.innerHTML = '<li style="color:#9ca3af;font-size:13px;padding:8px 0">タスクなし</li>';
+          return;
+        }
+
+        data.results.forEach(page => {
+          const props = page.properties;
+          const titleProp = Object.values(props).find(p => p.type === 'title');
+          const checkProp = Object.values(props).find(p => p.type === 'checkbox');
+          const title = titleProp?.title?.[0]?.plain_text || '（タイトルなし）';
+          const done = checkProp?.checkbox || false;
+
+          const li = document.createElement('li');
+          li.className = done ? 'done' : '';
+          li.innerHTML = `
+            <div class="check">${done ? '✓' : ''}</div>
+            <span>${title}</span>
+          `;
+          list.appendChild(li);
+        });
+      } catch (e) {
+        document.getElementById('notion-list').innerHTML =
+          `<li style="color:#ef4444;font-size:13px;padding:8px 0">エラー：${e.message}</li>`;
+      }
+    }
+
+    fetchNotionTodos();
+    setInterval(fetchNotionTodos, 60000); // 1分ごとに更新
 
     renderTodos();
     renderCalendar();
