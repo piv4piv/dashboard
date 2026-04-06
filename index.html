@@ -482,6 +482,12 @@
       );
       const data = await res.json();
 
+      if (data.error) {
+        document.getElementById('gcal-status').textContent =
+          'エラー：' + data.error.message;
+        return;
+      }
+
       calendarEvents = {};
       (data.items || []).forEach(event => {
         const dateStr = event.start?.date || event.start?.dateTime?.substring(0, 10);
@@ -489,6 +495,10 @@
         if (!calendarEvents[dateStr]) calendarEvents[dateStr] = [];
         calendarEvents[dateStr].push(event.summary || '（タイトルなし）');
       });
+
+      const count = (data.items || []).length;
+      document.getElementById('gcal-status').textContent =
+        `Googleカレンダー連携中（${count}件）`;
 
       renderCalendar();
     }
