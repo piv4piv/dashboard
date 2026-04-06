@@ -458,6 +458,9 @@
           }
         },
       });
+
+      // ページ読み込み時に自動で再認証を試みる
+      tokenClient.requestAccessToken({ prompt: '' });
     }
 
     function handleGcalAuth() {
