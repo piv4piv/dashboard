@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>血圧記録</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      color: #1f2937;
+    }
+
+    /* サマリーカード */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .summary-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+    .summary-card .label {
+      font-size: 11px;
+      color: #9ca3af;
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .summary-card .value {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+    }
+    .summary-card .unit {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 4px;
+    }
+    .summary-card .trend {
+      font-size: 11px;
+      margin-top: 6px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+    }
+    .trend.good { background: #dcfce7; color: #16a34a; }
+    .trend.warn { background: #fef9c3; color: #ca8a04; }
+    .trend.bad  { background: #fee2e2; color: #dc2626; }
+
+    /* グラフカード */
+    .chart-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .chart-card h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .chart-wrap {
+      position: relative;
+      height: 220px;
+    }
+
+    /* 基準値ガイド */
+    .guide {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      margin-bottom: 16px;
+    }
+    .guide h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .guide-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      font-size: 12px;
+    }
+    .guide-item {
+      padding: 8px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    .guide-item .g-label { font-weight: 600; margin-bottom: 2px; }
+    .guide-item .g-range { color: #6b7280; font-size: 11px; }
+    .g-normal  { background: #dcfce7; }
+    .g-caution { background: #fef9c3; }
+    .g-high    { background: #fee2e2; }
+    .g-low     { background: #dbeafe; }
+
+    /* 履歴テーブル */
+    .history-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .history-card h2 {
+      font-size: 13px;
+      font-weight: 600;
+      color: #888;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th {
+      text-align: left;
+      padding: 6px 8px;
+      color: #9ca3af;
+      font-size: 11px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    td {
+      padding: 8px;
+      border-bottom: 1px solid #f3f4f6;
+    }
+    td.high { color: #dc2626; font-weight: 600; }
+    td.normal { color: #16a34a; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    .badge.正常 { background: #dcfce7; color: #16a34a; }
+    .badge.注意 { background: #fef9c3; color: #ca8a04; }
+    .badge.高め { background: #fee2e2; color: #dc2626; }
+
+    /* 戻るリンク */
+    .back-link {
+      display: inline-block;
+      margin-bottom: 16px;
+      color: #4f46e5;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <a class="back-link" href="index.html">← ダッシュボードに戻る</a>
+  <h1>血圧記録</h1>
+
+  <!-- サマリー -->
+  <div class="summary-grid">
+    <div class="summary-card">
+      <div class="label">最新（上）</div>
+      <div class="value" style="color:#ef4444;" id="latest-sys">—</div>
+      <div class="unit">mmHg</div>
+      <div class="trend" id="trend-sys"></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">最新（下）</div>
+      <div class="value" style="color:#3b82f6;" id="latest-dia">—</div>
+      <div class="unit">mmHg</div>
+      <div class="trend" id="trend-dia"></div>
+    </div>
+    <div class="summary-card">
+      <div class="label">脈拍</div>
+      <div class="value" style="color:#8b5cf6;" id="latest-pulse">—</div>
+      <div class="unit">bpm</div>
+      <div class="trend" id="trend-pulse"></div>
+    </div>
+  </div>
+
+  <!-- 折れ線グラフ -->
+  <div class="chart-card">
+    <h2>過去30日間の推移</h2>
+    <div class="chart-wrap">
+      <canvas id="bp-chart"></canvas>
+    </div>
+  </div>
+
+  <!-- 基準値ガイド -->
+  <div class="guide">
+    <h2>血圧の目安</h2>
+    <div class="guide-grid">
+      <div class="guide-item g-normal">
+        <div class="g-label">正常</div>
+        <div class="g-range">120/80未満</div>
+      </div>
+      <div class="guide-item g-caution">
+        <div class="g-label">正常高値</div>
+        <div class="g-range">130/80未満</div>
+      </div>
+      <div class="guide-item g-high">
+        <div class="g-label">高血圧Ⅰ度</div>
+        <div class="g-range">140/90以上</div>
+      </div>
+      <div class="guide-item g-low">
+        <div class="g-label">低血圧</div>
+        <div class="g-range">100/60未満</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 履歴テーブル -->
+  <div class="history-card">
+    <h2>記録一覧</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>日付</th>
+          <th>上 (mmHg)</th>
+          <th>下 (mmHg)</th>
+          <th>脈拍</th>
+          <th>判定</th>
+        </tr>
+      </thead>
+      <tbody id="history-body"></tbody>
+    </table>
+  </div>
+
+  <script>
+    // ===== ダミーデータ =====
+    const data = [
+      { date: '4/1',  sys: 118, dia: 76, pulse: 68 },
+      { date: '4/2',  sys: 122, dia: 78, pulse: 70 },
+      { date: '4/3',  sys: 135, dia: 85, pulse: 72 },
+      { date: '4/4',  sys: 128, dia: 80, pulse: 69 },
+      { date: '4/5',  sys: 120, dia: 75, pulse: 66 },
+      { date: '4/6',  sys: 116, dia: 74, pulse: 65 },
+      { date: '4/7',  sys: 142, dia: 92, pulse: 78 },
+      { date: '4/8',  sys: 130, dia: 82, pulse: 71 },
+      { date: '4/9',  sys: 119, dia: 77, pulse: 67 },
+      { date: '4/10', sys: 124, dia: 79, pulse: 70 },
+    ];
+
+    // ===== サマリー =====
+    const latest = data[data.length - 1];
+    const prev = data[data.length - 2];
+
+    function setTrend(id, current, previous, goodDir) {
+      const el = document.getElementById(id);
+      const diff = current - previous;
+      const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+      const isGood = goodDir === 'down' ? diff <= 0 : diff >= 0;
+      el.textContent = `${arrow} ${Math.abs(diff)} 前回比`;
+      el.className = `trend ${diff === 0 ? 'good' : isGood ? 'good' : 'warn'}`;
+    }
+
+    document.getElementById('latest-sys').textContent = latest.sys;
+    document.getElementById('latest-dia').textContent = latest.dia;
+    document.getElementById('latest-pulse').textContent = latest.pulse;
+    setTrend('trend-sys', latest.sys, prev.sys, 'down');
+    setTrend('trend-dia', latest.dia, prev.dia, 'down');
+    setTrend('trend-pulse', latest.pulse, prev.pulse, 'down');
+
+    // ===== グラフ =====
+    const ctx = document.getElementById('bp-chart').getContext('2d');
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.map(d => d.date),
+        datasets: [
+          {
+            label: '上（収縮期）',
+            data: data.map(d => d.sys),
+            borderColor: '#ef4444',
+            backgroundColor: 'rgba(239,68,68,0.1)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
+          {
+            label: '下（拡張期）',
+            data: data.map(d => d.dia),
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59,130,246,0.1)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 4,
+            pointHoverRadius: 6,
+          },
+          {
+            label: '脈拍',
+            data: data.map(d => d.pulse),
+            borderColor: '#8b5cf6',
+            backgroundColor: 'rgba(139,92,246,0.1)',
+            tension: 0.4,
+            fill: false,
+            pointRadius: 4,
+            borderDash: [4, 4],
+            pointHoverRadius: 6,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11 } } },
+          annotation: {},
+        },
+        scales: {
+          y: {
+            min: 50,
+            max: 160,
+            grid: { color: '#f3f4f6' },
+            ticks: { font: { size: 11 } },
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 } },
+          },
+        },
+      },
+    });
+
+    // ===== 判定 =====
+    function judge(sys, dia) {
+      if (sys >= 140 || dia >= 90) return '高め';
+      if (sys >= 130 || dia >= 80) return '注意';
+      return '正常';
+    }
+
+    // ===== 履歴テーブル =====
+    const tbody = document.getElementById('history-body');
+    [...data].reverse().forEach(d => {
+      const j = judge(d.sys, d.dia);
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${d.date}</td>
+        <td class="${d.sys >= 140 ? 'high' : 'normal'}">${d.sys}</td>
+        <td class="${d.dia >= 90 ? 'high' : 'normal'}">${d.dia}</td>
+        <td>${d.pulse}</td>
+        <td><span class="badge ${j}">${j}</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+</body>
+</html>
