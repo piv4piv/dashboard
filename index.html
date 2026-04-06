@@ -476,32 +476,42 @@
       const startOfMonth = new Date(currentYear, currentMonth, 1).toISOString();
       const endOfMonth = new Date(currentYear, currentMonth + 1, 0, 23, 59, 59).toISOString();
       try {
+        // まず全カレンダー一覧を取得
+        const calListRes = await fetch(
+          'https://www.googleapis.com/calendar/v3/users/me/calendarList',
+          { headers: { Authorization: `Bearer ${accessToken}` } }
+        );
+        const calListData = await calListRes.json();
+        if (calListData.error) {
+          document.getElementById('gcal-status').textContent = 'エラー：' + calListData.error.message;
+          return;
+        }
 
-      const res = await fetch(
-        `https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${startOfMonth}&timeMax=${endOfMonth}&singleEvents=true&maxResults=100`,
-        { headers: { Authorization: `Bearer ${accessToken}` } }
-      );
-      const data = await res.json();
+        // 全カレンダーから予定を取得
+        calendarEvents = {};
+        let totalCount = 0;
 
-      if (data.error) {
+        for (const cal of (calListData.items || [])) {
+          const res = await fetch(
+            `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(cal.id)}/events?timeMin=${startOfMonth}&timeMax=${endOfMonth}&singleEvents=true&maxResults=100`,
+            { headers: { Authorization: `Bearer ${accessToken}` } }
+          );
+          const data = await res.json();
+          if (data.error) continue;
+
+          (data.items || []).forEach(event => {
+            const dateStr = event.start?.date || event.start?.dateTime?.substring(0, 10);
+            if (!dateStr) return;
+            if (!calendarEvents[dateStr]) calendarEvents[dateStr] = [];
+            calendarEvents[dateStr].push(event.summary || '（タイトルなし）');
+            totalCount++;
+          });
+        }
+
         document.getElementById('gcal-status').textContent =
-          'エラー：' + data.error.message;
-        return;
-      }
+          `Googleカレンダー連携中（${totalCount}件）`;
 
-      calendarEvents = {};
-      (data.items || []).forEach(event => {
-        const dateStr = event.start?.date || event.start?.dateTime?.substring(0, 10);
-        if (!dateStr) return;
-        if (!calendarEvents[dateStr]) calendarEvents[dateStr] = [];
-        calendarEvents[dateStr].push(event.summary || '（タイトルなし）');
-      });
-
-      const count = (data.items || []).length;
-      document.getElementById('gcal-status').textContent =
-        `Googleカレンダー連携中（${count}件）`;
-
-      renderCalendar();
+        renderCalendar();
       } catch (e) {
         document.getElementById('gcal-status').textContent = 'エラー：' + e.message;
       }
